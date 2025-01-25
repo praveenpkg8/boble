@@ -4,46 +4,67 @@ extends CharacterBody2D
 signal enemy_destroyed(enemy: Enemy)
 
 @export var speed: float = 100.0
-@export var damage: float = 10.0
+@export var damage: float = 3.0
 @export var attack_cooldown: float = 1.0  # Time between attacks
 @export var is_fast_enemy: bool = true
 @export var area_damage_radius: float = 0.0  # Set > 0 for area damage enemies
-var attacking_force = 100
+var attacking_force = 300
 var target: Node2D
 var can_attack: bool = true
 var attack_timer: float = 0.0
-var health: float = 50.0
+var health: float = 100.0
 var is_destroyed: bool = false
+var tower_manager: TowerManager
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 func _ready():
+	# Add self to enemies group
+	add_to_group("enemies")
+	print("Enemy added to enemies group")
+	
+	# Get the tower manager reference
+	tower_manager = get_node("/root/GameWorld/TowerManager")
+	if not tower_manager:
+		push_error("TowerManager not found!")
+	
+	# Get combat manager reference
+	var combat_manager = get_node("/root/GameWorld/CombatManager")
+	if not combat_manager:
+		push_error("CombatManager not found!")
+	
+	# Connect destroy signal to combat manager
+	enemy_destroyed.connect(func(_enemy): combat_manager.enemy_killed())
+	
+	# Initialize enemy
 	if is_fast_enemy:
 		speed *= 1.5
-		damage *= 0.7
-		health *= 0.8
+		health *= 0.7
 	else:
 		speed *= 0.7
-		damage *= 1.5
-		health *= 1.2
+		health *= 1.5
+		area_damage_radius = 100.0  # Slow enemies do area damage
 
 func _physics_process(delta: float) -> void:
+	if is_destroyed:
+		return
+		
 	if not can_attack:
 		attack_timer += delta
 		if attack_timer >= attack_cooldown:
 			can_attack = true
 			attack_timer = 0.0
 
-	if is_destroyed or not target or not is_instance_valid(target):
+	# Find target if none exists
+	if not target or not is_instance_valid(target):
 		find_new_target()
 		return
 		
+	# Calculate direction to target
 	var direction = global_position.direction_to(target.global_position)
 	velocity = direction * speed
 	
-	# Rotate to face movement direction
-	rotation = lerp_angle(rotation, direction.angle(), 10.0 * delta)
-	
+	# Move the enemy
 	move_and_slide()
 	
 	# Check for collision with target
@@ -69,7 +90,7 @@ func take_damage(amount: float):
 	print("Enemy taking damage: ", amount)
 	health -= amount
 	
-	# Optional: Add visual feedback
+	# Visual feedback
 	modulate = Color(1, 0.5, 0.5, 1)  # Flash red
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", Color(1, 1, 1, 1), 0.2)
@@ -126,20 +147,26 @@ func set_target(new_target: Node2D):
 	target = new_target
 
 func find_new_target():
-	var tower_manager = get_node("../TowerManager")
-	if tower_manager and tower_manager.towers.size() > 0 and randf() < 0.67:
-		target = tower_manager.towers[randi() % tower_manager.towers.size()]
+	# Get tower manager from the game world
+	var tower_manager = get_node("/root/GameWorld/TowerManager")
+	if tower_manager and tower_manager.towers.size() > 0:
+		# 67% chance to target towers
+		if randf() < 0.67:
+			target = tower_manager.towers[randi() % tower_manager.towers.size()]
+			return
+	
+	# If no towers or 33% chance, target player
+	var player = get_node("/root/GameWorld/Player")
+	if player:
+		target = player
 	else:
-		var player = get_node_or_null("../Player")
-		if player:
-			target = player
-		else:
-			push_error("Could not find player node")
+		push_error("Could not find player node")
 
 func destroy():
 	if not is_destroyed:
 		is_destroyed = true
 		enemy_destroyed.emit(self)
+		print("Enemy destroyed, emitting signal")
 		queue_free()
 
 func _on_hitbox_area_entered(area: Area2D):
@@ -162,12 +189,12 @@ func apply_single_damage(target_node: Node2D):
 		target_node.take_damage(damage)
 
 func apply_area_damage(center_target: Node2D):
-	# Apply damage to center target
-	apply_single_damage(center_target)
-	
-	# Find and damage nearby towers
-	var tower_manager = get_node("../TowerManager")
-	if tower_manager:
-		for tower in tower_manager.towers:
-			if tower != center_target and tower.global_position.distance_to(center_target.global_position) <= area_damage_radius:
-				apply_single_damage(tower)
+	if not tower_manager:
+		return
+		
+	var towers = tower_manager.towers
+	for tower in towers:
+		if tower != center_target and is_instance_valid(tower):
+			var distance = global_position.distance_to(tower.global_position)
+			if distance <= area_damage_radius:
+				tower.take_damage(damage * (1 - distance/area_damage_radius))

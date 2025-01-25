@@ -5,12 +5,12 @@ signal sound_played(sound_name: String)
 # Sound effect paths
 const SOUNDS = {
 	"player_hit": "res://assets/sounds/player_hit.wav",
-    "player_death": "res://assets/sounds/player_death.mp3",
+	"player_death": "res://assets/sounds/player_death.mp3",
 	"enemy_hit": "res://assets/sounds/enemy_hit.wav",
 	"weapon_swing": "res://assets/sounds/weapon_swing.wav",
 	"shoot": "res://assets/sounds/shoot.wav",
 	"enemy_death": "res://assets/sounds/enemy_death.wav",
-    "general_world_sound": "res://assets/sounds/general_world_sound.mp3",
+	"general_world_sound": "res://assets/sounds/general_world_sound.mp3",
 }
 
 # Audio players pool for sound effects

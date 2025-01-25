@@ -23,6 +23,11 @@ var current_repair_tower: Tower = null
 var ability_1_timer: float = 0.0
 var ability_2_timer: float = 0.0
 var combat_manager: CombatManager
+var damage_boost_active: bool = false
+var damage_boost_duration: float = 5.0  # Duration in seconds
+var damage_boost_multiplier: float = 2.0  # Doubles damage
+var damage_boost_timer: float = 0.0
+var weapon_level: int = 1
 
 @onready var raycast: RayCast2D = $RayCast2D
 @onready var health_component: HealthComponent = $HealthComponent
@@ -190,6 +195,14 @@ func _process(delta: float):
 		use_special_ability_1()
 	if Input.is_action_just_pressed("ability_2") and ability_2_timer <= 0:
 		use_special_ability_2()
+	
+	# Handle damage boost duration
+	if damage_boost_active:
+		damage_boost_timer -= delta
+		if damage_boost_timer <= 0:
+			damage_boost_active = false
+			modulate = Color(1, 1, 1, 1)  # Reset color
+			print("Damage boost ended")
 
 func try_repair_nearest_tower():
 	var nearest_tower = find_nearest_damaged_tower()
@@ -231,7 +244,7 @@ func use_special_ability_1():
 	print("Special Ability 1 (Q) activated")
 	# Area damage to nearby enemies
 	var radius = 150.0
-	var base_damage = 50.0  # Set a base damage value
+	var base_damage = 50.0
 	
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var enemies_hit = 0
@@ -241,33 +254,28 @@ func use_special_ability_1():
 			var distance = global_position.distance_to(enemy.global_position)
 			if distance <= radius:
 				# Calculate damage falloff based on distance
-				var damage_multiplier = 1.0 - (distance / radius)
+				var damage_multiplier = 2.3 - (distance / radius)
 				var final_damage = base_damage * damage_multiplier
+				print("Final damage: ", final_damage)
+				print("Attempting to damage enemy at distance: ", distance)
 				enemy.take_damage(final_damage)
 				enemies_hit += 1
-				print("Enemy hit with Q ability - Damage: ", final_damage)
 	
 	print("Q ability hit ", enemies_hit, " enemies")
-	
-	# Start cooldown
 	ability_1_timer = special_ability_1_cooldown
-	
-	# Visual feedback
 	spawn_ability_1_effect(radius)
 
 func use_special_ability_2():
-	# Temporary damage boost
-	var boost_duration = 5.0
-	var damage_multiplier = 2.0
+	print("Special Ability 2 (E) activated - Damage Boost")
+	# Activate damage boost
+	damage_boost_active = true
+	damage_boost_timer = damage_boost_duration
 	
-	combat_manager.weapon_level *= damage_multiplier
+	# Visual feedback
+	modulate = Color(1.0, 0.5, 0.0, 1.0)  # Orange glow
+	
+	# Start cooldown
 	ability_2_timer = special_ability_2_cooldown
-	
-	# Create timer for reverting damage
-	var timer = get_tree().create_timer(boost_duration)
-	timer.timeout.connect(func(): combat_manager.weapon_level = int(combat_manager.weapon_level / damage_multiplier))
-	
-	spawn_ability_2_effect()
 
 func spawn_ability_1_effect(radius: float):
 	var effect = Node2D.new()
@@ -314,3 +322,7 @@ func spawn_ability_2_effect():
 	effect.add_child(timer)
 	timer.timeout.connect(func(): effect.queue_free())
 	timer.start()
+
+func get_current_damage() -> float:
+	var current_damage = base_damage * weapon_level
+	return current_damage * (damage_boost_multiplier if damage_boost_active else 1.0)

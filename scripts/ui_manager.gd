@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var ability2_cooldown = $AbilityInfo/Ability2/Cooldown
 @onready var game_over_panel = $GameOverPanel
 @onready var victory_panel = $VictoryPanel
+@onready var wave_timer_label = $WaveInfo/WaveTimer
 
 var combat_manager: CombatManager
 var wave_manager: WaveManager
@@ -40,6 +41,13 @@ func _ready():
 	if restart_button:
 		# Make sure button can process while paused
 		restart_button.process_mode = Node.PROCESS_MODE_ALWAYS
+		
+		# Disconnect any existing connections first
+		if restart_button.is_connected("pressed", _on_restart_pressed):
+			print("Removing existing restart button connection")
+			restart_button.disconnect("pressed", _on_restart_pressed)
+		
+		# Connect the signal
 		restart_button.pressed.connect(_on_restart_pressed)
 		print("Restart button connected")
 	
@@ -63,6 +71,15 @@ func _process(_delta):
 	# Update enemy count if wave is active
 	if is_instance_valid(wave_manager):
 		enemy_count.text = "Enemies: %d" % wave_manager.enemies_remaining
+	
+	# Update wave timer if wave is active
+	if is_instance_valid(wave_manager) and wave_manager.is_wave_active:
+		var time_remaining = wave_manager.WAVE_TIME_LIMIT - wave_manager.wave_timer
+		var minutes = floor(time_remaining / 60)
+		var seconds = floor(fmod(time_remaining, 60))
+		wave_timer_label.text = "Time: %02d:%02d" % [minutes, seconds]
+	else:
+		wave_timer_label.text = "Time: --:--"
 
 func _on_score_updated(score: int, multiplier: float):
 	score_label.text = "Score: %d" % score

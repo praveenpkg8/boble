@@ -11,9 +11,9 @@ shader = ExtResource("2_shader")
 shader_parameter/progress = 0.0
 shader_parameter/indicator_color = Color(0, 1, 0, 1)
 
-[node name="Tower" type="StaticBody2D" groups=["towers"]]
-collision_layer = 4
-collision_mask = 2
+[node name="Tower" type="StaticBody2D"]
+collision_layer = 1
+collision_mask = 6
 script = ExtResource("1_tower")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
