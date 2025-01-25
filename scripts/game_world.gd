@@ -6,12 +6,12 @@ var enemy_spawner: EnemySpawner
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# Initialize enemy spawner
-	enemy_spawner = EnemySpawner.new()
-	add_child(enemy_spawner)
+	#enemy_spawner = EnemySpawner.new()
+	#add_child(enemy_spawner)
 	
 	
 	# Set random position within viewport, accounting for padding
-	enemy_spawner.position = Vector2.ZERO
+	#enemy_spawner.position = Vector2.ZERO
 
 	SoundManager.sound_played.connect(_on_sound_played)
 

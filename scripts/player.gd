@@ -16,10 +16,11 @@ var is_moving_to_target: bool = false
 
 @onready var raycast: RayCast2D = $RayCast2D
 @onready var health_component: HealthComponent = $HealthComponent
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D2
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 func _ready():
 	print("Starting player initialization...")
+	add_to_group("player")
 	
 	# Initialize health component
 	if not health_component:
@@ -106,7 +107,7 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	# Handle right-click to cancel movement to target
-	if event.is_action_pressed("right_click"):  # Make sure to define this input action
+	if event.is_action_pressed("click"):  # Make sure to define this input action
 		is_moving_to_target = false
 		velocity = Vector2.ZERO
 
