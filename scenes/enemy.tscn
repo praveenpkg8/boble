@@ -1,10 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://ctqick0c1nedd"]
+[gd_scene load_steps=12 format=3 uid="uid://ctqick0c1nedd"]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/root.gd" id="3_5n2rj"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/composite_nodes/selector.gd" id="4_t0r0b"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/composite_nodes/sequence.gd" id="5_irffb"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/sense.gd" id="6_8w70k"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/follow_through.gd" id="7_irdnq"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/attack.gd" id="8_jardk"]
+[ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/patrol.gd" id="9_x4q44"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2"]
+size = Vector2(300, 300)
 
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 2
@@ -27,4 +37,36 @@ collision_layer = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
 shape = SubResource("RectangleShape2D_1")
 
+[node name="FollowUpZone" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FollowUpZone"]
+shape = SubResource("RectangleShape2D_2")
+
+[node name="EnemyBehaviourAI" type="Node" parent="."]
+script = ExtResource("3_5n2rj")
+
+[node name="Selector" type="Node" parent="EnemyBehaviourAI"]
+script = ExtResource("4_t0r0b")
+
+[node name="Sequence" type="Node" parent="EnemyBehaviourAI/Selector"]
+script = ExtResource("5_irffb")
+
+[node name="FollowThrough" type="Node" parent="EnemyBehaviourAI/Selector/Sequence"]
+script = ExtResource("7_irdnq")
+
+[node name="Sense" type="Node" parent="EnemyBehaviourAI/Selector/Sequence"]
+script = ExtResource("6_8w70k")
+
+[node name="Attack" type="Node" parent="EnemyBehaviourAI/Selector/Sequence"]
+script = ExtResource("8_jardk")
+
+[node name="Selector" type="Node" parent="EnemyBehaviourAI/Selector"]
+script = ExtResource("4_t0r0b")
+
+[node name="Patrol" type="Node" parent="EnemyBehaviourAI/Selector/Selector"]
+script = ExtResource("9_x4q44")
+
 [connection signal="body_entered" from="HitBox" to="." method="_on_body_entered"]
+[connection signal="body_entered" from="FollowUpZone" to="." method="_on_follow_through_area_body_entered"]
+[connection signal="body_exited" from="FollowUpZone" to="." method="_on_follow_through_area_body_exited"]
