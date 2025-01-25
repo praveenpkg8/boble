@@ -6,6 +6,9 @@ extends CharacterBody2D
 @export var move_speed: float = 300.0  # Movement speed
 @export var rotation_speed: float = 10.0  # Speed at which player rotates to face direction
 @export var mouse_movement_threshold: float = 10.0  # Minimum distance to move to mouse position
+@export var base_damage: float = 10.0
+@export var special_ability_1_cooldown: float = 5.0
+@export var special_ability_2_cooldown: float = 8.0
 
 var weapon_system: WeaponSystem
 var vfx_system: VFXSystem
@@ -13,12 +16,19 @@ var is_dead: bool = false
 var viewport_rect: Rect2
 var target_position: Vector2 = Vector2.ZERO
 var is_moving_to_target: bool = false
+var resources: int = 1
+var max_resources: int = 3
+var is_repairing: bool = false
+var current_repair_tower: Tower = null
+var ability_1_timer: float = 0.0
+var ability_2_timer: float = 0.0
+var combat_manager: CombatManager
 
 @onready var raycast: RayCast2D = $RayCast2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
-func _ready():
+func _ready():	
 	print("Starting player initialization...")
 	add_to_group("player")
 	
@@ -54,6 +64,7 @@ func _ready():
 
 	init_viewport_boundaries()
 	target_position = position  # Initialize target position to current position
+	combat_manager = get_node("../CombatManager")
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -103,7 +114,7 @@ func _physics_process(delta: float) -> void:
 	
 	# Move and check boundaries
 	move_and_slide()
-	clamp_to_viewport()
+	# clamp_to_viewport()
 
 func _input(event: InputEvent) -> void:
 	# Handle right-click to cancel movement to target
@@ -157,3 +168,149 @@ func _on_health_changed(current: float, maximum: float):
 
 func init_viewport_boundaries():
 	viewport_rect = Rect2(Vector2.ZERO, get_viewport_rect().size)
+
+func _process(delta: float):
+	if Input.is_action_just_pressed("repair") and resources > 0:
+		try_repair_nearest_tower()
+	
+	if is_repairing and (Input.is_action_just_pressed("move_left") or 
+		Input.is_action_just_pressed("move_right") or 
+		Input.is_action_just_pressed("move_up") or 
+		Input.is_action_just_pressed("move_down")):
+		interrupt_repair()
+	
+	# Update ability cooldowns
+	if ability_1_timer > 0:
+		ability_1_timer -= delta
+	if ability_2_timer > 0:
+		ability_2_timer -= delta
+	
+	# Check for ability inputs
+	if Input.is_action_just_pressed("ability_1") and ability_1_timer <= 0:
+		use_special_ability_1()
+	if Input.is_action_just_pressed("ability_2") and ability_2_timer <= 0:
+		use_special_ability_2()
+
+func try_repair_nearest_tower():
+	var nearest_tower = find_nearest_damaged_tower()
+	if nearest_tower and nearest_tower.start_repair(50.0):  # Repair amount
+		resources -= 1
+		is_repairing = true
+		current_repair_tower = nearest_tower
+		current_repair_tower.repair_completed.connect(_on_repair_completed)
+
+func interrupt_repair():
+	if current_repair_tower:
+		current_repair_tower.interrupt_repair()
+		is_repairing = false
+		current_repair_tower = null
+
+func find_nearest_damaged_tower() -> Tower:
+	var towers = get_tree().get_nodes_in_group("towers")
+	var nearest_distance = 100.0  # Maximum repair distance
+	var nearest_tower = null
+	
+	for tower in towers:
+		if tower.current_health < tower.max_health:
+			var distance = global_position.distance_to(tower.global_position)
+			if distance < nearest_distance:
+				nearest_distance = distance
+				nearest_tower = tower
+	
+	return nearest_tower
+
+func _on_repair_completed():
+	is_repairing = false
+	current_repair_tower = null
+
+func collect_resource(resource: GameResource):
+	if resources < max_resources:
+		resources += 1
+
+func use_special_ability_1():
+	print("Special Ability 1 (Q) activated")
+	# Area damage to nearby enemies
+	var radius = 150.0
+	var base_damage = 50.0  # Set a base damage value
+	
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var enemies_hit = 0
+	
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var distance = global_position.distance_to(enemy.global_position)
+			if distance <= radius:
+				# Calculate damage falloff based on distance
+				var damage_multiplier = 1.0 - (distance / radius)
+				var final_damage = base_damage * damage_multiplier
+				enemy.take_damage(final_damage)
+				enemies_hit += 1
+				print("Enemy hit with Q ability - Damage: ", final_damage)
+	
+	print("Q ability hit ", enemies_hit, " enemies")
+	
+	# Start cooldown
+	ability_1_timer = special_ability_1_cooldown
+	
+	# Visual feedback
+	spawn_ability_1_effect(radius)
+
+func use_special_ability_2():
+	# Temporary damage boost
+	var boost_duration = 5.0
+	var damage_multiplier = 2.0
+	
+	combat_manager.weapon_level *= damage_multiplier
+	ability_2_timer = special_ability_2_cooldown
+	
+	# Create timer for reverting damage
+	var timer = get_tree().create_timer(boost_duration)
+	timer.timeout.connect(func(): combat_manager.weapon_level = int(combat_manager.weapon_level / damage_multiplier))
+	
+	spawn_ability_2_effect()
+
+func spawn_ability_1_effect(radius: float):
+	var effect = Node2D.new()
+	add_child(effect)
+	
+	# Create the visual circle
+	effect.draw.connect(func():
+		var center = Vector2.ZERO
+		var points = PackedVector2Array()
+		var num_points = 32
+		for i in range(num_points + 1):
+			var angle = i * 2 * PI / num_points
+			points.push_back(center + Vector2(cos(angle), sin(angle)) * radius)
+		effect.draw_colored_polygon(points, Color(1, 0, 0, 0.3))
+	)
+	
+	# Create timer as child of effect
+	var timer = Timer.new()
+	timer.wait_time = 0.5
+	timer.one_shot = true
+	effect.add_child(timer)
+	timer.timeout.connect(func(): effect.queue_free())
+	timer.start()
+
+func spawn_ability_2_effect():
+	var effect = Node2D.new()
+	add_child(effect)
+	
+	# Create the visual circle
+	effect.draw.connect(func():
+		var center = Vector2.ZERO
+		var points = PackedVector2Array()
+		var num_points = 16
+		for i in range(num_points + 1):
+			var angle = i * 2 * PI / num_points
+			points.push_back(center + Vector2(cos(angle), sin(angle)) * 20)
+		effect.draw_colored_polygon(points, Color(0, 1, 0, 0.5))
+	)
+	
+	# Create timer as child of effect
+	var timer = Timer.new()
+	timer.wait_time = 0.5
+	timer.one_shot = true
+	effect.add_child(timer)
+	timer.timeout.connect(func(): effect.queue_free())
+	timer.start()

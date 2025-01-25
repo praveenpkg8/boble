@@ -1,0 +1,179 @@
+[gd_scene load_steps=2 format=3 uid="uid://butiv5bx0e1gf"]
+
+[ext_resource type="Script" path="res://scripts/ui_manager.gd" id="1_ui"]
+
+[node name="GameUI" type="CanvasLayer"]
+script = ExtResource("1_ui")
+
+[node name="WaveInfo" type="VBoxContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 86.0
+
+[node name="WaveLabel" type="Label" parent="WaveInfo"]
+layout_mode = 2
+text = "Wave: 1/5"
+horizontal_alignment = 2
+
+[node name="EnemyCount" type="Label" parent="WaveInfo"]
+layout_mode = 2
+text = "Enemies: 0"
+horizontal_alignment = 2
+
+[node name="ScoreInfo" type="VBoxContainer" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 86.0
+
+[node name="ScoreLabel" type="Label" parent="ScoreInfo"]
+layout_mode = 2
+text = "Score: 0"
+
+[node name="MultiplierLabel" type="Label" parent="ScoreInfo"]
+layout_mode = 2
+text = "x1.00"
+
+[node name="ResourceInfo" type="VBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -86.0
+offset_right = 200.0
+offset_bottom = -20.0
+
+[node name="ResourceCount" type="Label" parent="ResourceInfo"]
+layout_mode = 2
+text = "Resources: 0/3"
+
+[node name="AbilityInfo" type="HBoxContainer" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -86.0
+offset_right = 100.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Ability1" type="VBoxContainer" parent="AbilityInfo"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="AbilityInfo/Ability1"]
+layout_mode = 2
+text = "Q - Area Damage"
+horizontal_alignment = 1
+
+[node name="Cooldown" type="ProgressBar" parent="AbilityInfo/Ability1"]
+layout_mode = 2
+value = 100.0
+
+[node name="Ability2" type="VBoxContainer" parent="AbilityInfo"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="AbilityInfo/Ability2"]
+layout_mode = 2
+text = "E - Damage Boost"
+horizontal_alignment = 1
+
+[node name="Cooldown" type="ProgressBar" parent="AbilityInfo/Ability2"]
+layout_mode = 2
+value = 100.0
+
+[node name="GameOverPanel" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameOverPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -68.0
+offset_right = 100.0
+offset_bottom = 68.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="GameOverPanel/VBoxContainer"]
+layout_mode = 2
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="GameOverPanel/VBoxContainer"]
+layout_mode = 2
+text = "Restart"
+
+[node name="QuitButton" type="Button" parent="GameOverPanel/VBoxContainer"]
+layout_mode = 2
+text = "Quit"
+
+[node name="VictoryPanel" type="Panel" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -100.0
+offset_right = 200.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VictoryPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -68.0
+offset_right = 100.0
+offset_bottom = 68.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VictoryPanel/VBoxContainer"]
+layout_mode = 2
+text = "Victory!"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="VictoryPanel/VBoxContainer"]
+layout_mode = 2
+text = "Play Again"
+
+[node name="QuitButton" type="Button" parent="VictoryPanel/VBoxContainer"]
+layout_mode = 2
+text = "Quit"
+
+[connection signal="button_down" from="GameOverPanel/VBoxContainer/RestartButton" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="GameOverPanel/VBoxContainer/RestartButton" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="GameOverPanel/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="VictoryPanel/VBoxContainer/RestartButton" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="VictoryPanel/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]

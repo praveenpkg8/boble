@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(32, 32)
+
+[node name="EnemyFast" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_enemy")
+is_fast_enemy = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+color = Color(0.8, 0.2, 0.2, 1)
+polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[node name="HitBox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
+shape = SubResource("RectangleShape2D_1")
+
+[connection signal="area_entered" from="HitBox" to="." method="_on_hitbox_area_entered"] 
