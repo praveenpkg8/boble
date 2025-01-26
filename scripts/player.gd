@@ -319,9 +319,11 @@ func update_ability_visuals() -> void:
 		var e_intensity = (ability_e_duration_multiplier + ability_e_power_multiplier) / 2.0
 		ability_e_particles.modulate = Color(0.0, 0.5 + e_intensity * 0.5, 1.0, 1.0)
 
-func get_current_damage() -> float:
-	var current_damage = base_damage * weapon_level
-	return current_damage * (damage_boost_multiplier if damage_boost_active else 1.0)
+func calculate_damage(base_damage: float) -> float:
+	var final_damage = base_damage
+	if damage_boost_active:
+		final_damage *= damage_boost_multiplier
+	return final_damage
 
 func update_resource_label():
 	if resource_label:
