@@ -7,7 +7,7 @@ signal enemy_destroyed(enemy: Enemy)
 @export var damage: float = 3.0
 @export var health: float = 100.0
 @export var attack_range: float = 50.0
-@export var attack_cooldown: float = 1.0
+@export var attack_cooldown: float = 0.5  # 0.5 seconds between attacks
 @export var is_fast_enemy: bool = true
 @export var area_damage_radius: float = 0.0  # Set > 0 for area damage enemies
 var attacking_force = 300
@@ -65,9 +65,25 @@ func _physics_process(delta: float) -> void:
 	if is_destroyed:
 		return
 		
-	attack_timer = max(0, attack_timer - delta)
-	if attack_timer <= 0:
-		can_attack = true
+	# Update attack timer
+	if attack_timer > 0:
+		attack_timer -= delta
+		if attack_timer <= 0:
+			can_attack = true
+	
+	# Check for attacks if we can attack
+	if can_attack:
+		var overlapping_areas = $HitBox.get_overlapping_areas()
+		for area in overlapping_areas:
+			var parent = area.get_parent()
+			if parent is Tower and parent.has_method("take_damage"):
+				if area_damage_radius > 0:
+					apply_area_damage(parent)
+				else:
+					apply_single_damage(parent)
+				can_attack = false
+				attack_timer = attack_cooldown
+				break
 	
 	if !is_instance_valid(current_target):
 		find_new_target()
@@ -247,8 +263,6 @@ func apply_single_damage(target_node: Node2D):
 		print("Enemy dealing damage to tower: ", target_node.name)
 		print("Damage amount: ", damage)
 		target_node.take_damage(damage)
-		attack_timer = attack_cooldown
-		can_attack = false
 
 func apply_area_damage(center_target: Node2D):
 	if not tower_manager:

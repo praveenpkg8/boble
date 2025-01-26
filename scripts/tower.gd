@@ -4,6 +4,8 @@ extends StaticBody2D
 signal tower_destroyed(tower: Tower)
 signal health_changed(current: float, max: float)
 signal repair_completed
+signal repair_started
+signal repair_interrupted
 
 @export var max_health: float = 100.0
 @export var min_distance_between_towers: float = 150.0
@@ -14,6 +16,8 @@ var is_destroyed: bool = false
 
 @onready var health_indicator = $HealthIndicator
 @onready var repair_indicator = $RepairIndicator
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var sprite: Polygon2D = $Polygon2D
 
 func _ready():
 	current_health = max_health
@@ -25,12 +29,6 @@ func _ready():
 @export var repair_time: float = 4.0
 var repair_progress: float = 0.0
 var repair_amount: float = 0.0
-
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var sprite: Polygon2D = $Polygon2D
-
-signal repair_started
-signal repair_interrupted
 
 func _process(delta: float):
 	if is_being_repaired:
@@ -76,9 +74,10 @@ func take_damage(amount: float):
 		interrupt_repair()
 		
 	current_health = max(0, current_health - amount)
+	print("Tower current health: ", current_health)
 	update_health_indicator()
 	
-	if current_health <= 0:
+	if current_health <= 0 and !is_destroyed:
 		destroy()
 
 func update_health_indicator():
@@ -92,10 +91,23 @@ func update_health_indicator():
 	health_changed.emit(current_health, max_health)
 
 func destroy():
-	if not is_destroyed and is_inside_tree():
+	if not is_destroyed:
+		print("Tower destroyed!")
 		is_destroyed = true
 		remove_from_group("towers")
 		tower_destroyed.emit(self)
+		
+		# Make tower visually destroyed
+		modulate.a = 0.5
+		collision_shape.set_deferred("disabled", true)
+		
+		# Let tower manager handle the cleanup
+		var tower_manager = get_node("/root/GameWorld/TowerManager")
+		if tower_manager:
+			tower_manager._on_tower_destroyed()
+		
+		# Add a small delay before queue_free to allow effects to play
+		await get_tree().create_timer(0.5).timeout
 		queue_free()
 
 static func is_valid_tower_position(position: Vector2, existing_towers: Array[Tower]) -> bool:
