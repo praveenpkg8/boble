@@ -1,10 +1,61 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=13 format=3 uid="uid://divmcphcjgrqc"]
 
 [ext_resource type="Script" path="res://scripts/tower.gd" id="1_tower"]
+[ext_resource type="Texture2D" uid="uid://7iub02ywhcy7" path="res://assets/sprites/bubble_tower.png" id="2_c1fyx"]
 [ext_resource type="Shader" path="res://shaders/circular_progress.gdshader" id="2_shader"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(64, 64)
+[sub_resource type="AtlasTexture" id="AtlasTexture_23rkn"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(0, 0, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dd2j6"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(32, 0, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xcclx"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(64, 0, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m68ob"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(96, 0, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04rnh"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(128, 0, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5mswj"]
+atlas = ExtResource("2_c1fyx")
+region = Rect2(160, 0, 32, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_y14ty"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_23rkn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dd2j6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xcclx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m68ob")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_04rnh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5mswj")
+}],
+"loop": true,
+"name": &"new_animation",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5qb2b"]
+size = Vector2(24, 25)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1"]
 shader = ExtResource("2_shader")
@@ -12,28 +63,32 @@ shader_parameter/progress = 0.0
 shader_parameter/indicator_color = Color(0, 1, 0, 1)
 
 [node name="Tower" type="StaticBody2D"]
-collision_layer = 1
 collision_mask = 6
 script = ExtResource("1_tower")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_1")
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_y14ty")
+animation = &"new_animation"
+autoplay = "new_animation"
+frame = 5
+frame_progress = 0.0619618
+metadata/_edit_lock_ = true
 
-[node name="Polygon2D" type="Polygon2D" parent="."]
-color = Color(0.4, 0.4, 0.4, 1)
-polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 8.5)
+shape = SubResource("RectangleShape2D_5qb2b")
 
 [node name="HealthIndicator" type="Node2D" parent="."]
 
 [node name="Border" type="Polygon2D" parent="HealthIndicator"]
-position = Vector2(0, -40)
+position = Vector2(0, -27)
 color = Color(0.2, 0.2, 0.2, 1)
-polygon = PackedVector2Array(-32, -4, 32, -4, 32, 4, -32, 4)
+polygon = PackedVector2Array(-16, -3, 16, -3, 16, 3, -16, 3)
 
 [node name="Fill" type="Polygon2D" parent="HealthIndicator"]
-position = Vector2(0, -40)
+position = Vector2(0, -27)
 color = Color(0.2, 0.8, 0.2, 1)
-polygon = PackedVector2Array(-31, -3, 31, -3, 31, 3, -31, 3)
+polygon = PackedVector2Array(-15, -2, 15, -2, 15, 2, -15, 2)
 
 [node name="RepairIndicator" type="Node2D" parent="."]
 visible = false
