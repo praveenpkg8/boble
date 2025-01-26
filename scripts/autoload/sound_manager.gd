@@ -5,10 +5,11 @@ signal sound_played(sound_name: String)
 # Sound effect paths
 const SOUNDS = {
 	"player_hit": "res://assets/sounds/player_hit.wav",
-	"player_death": "res://assets/sounds/player_death.mp3",
+	"game_over": "res://assets/sounds/game_over.mp3",
 	"enemy_hit": "res://assets/sounds/enemy_hit.wav",
 	"weapon_swing": "res://assets/sounds/weapon_swing.wav",
-	"shoot": "res://assets/sounds/shoot.wav",
+	"shoot": "res://assets/sounds/bullet_sound.mp3",
+	"ability_used": "res://assets/sounds/water_bomb.mp3",
 	"enemy_death": "res://assets/sounds/enemy_death.wav",
 	"general_world_sound": "res://assets/sounds/general_world_sound.mp3",
 }
@@ -54,6 +55,7 @@ func play_sound(sound_name: String, volume_db: float = 0.0, pitch_scale: float =
 			player.pitch_scale = pitch_scale
 			player.play()
 			sound_played.emit(sound_name)
+			print("played sound ", sound_name)
 		else:
 			push_error("Could not load sound: " + SOUNDS[sound_name])
 			_on_audio_finished(player)
