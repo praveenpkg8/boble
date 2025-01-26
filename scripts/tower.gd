@@ -71,7 +71,7 @@ func update_repair_indicator():
 	progress_node.material.set_shader_parameter("progress", repair_progress)
 
 func take_damage(amount: float):
-	print("Take Damage")
+	print("Tower Take Damage")
 	if is_being_repaired:
 		interrupt_repair()
 		

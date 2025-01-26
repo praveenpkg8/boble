@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/game_world.gd" id="1_game_world"]
 [ext_resource type="Script" path="res://scripts/tower_manager.gd" id="2_tower_manager"]
-[ext_resource type="PackedScene" path="res://scenes/tower.tscn" id="3_tower"]
+[ext_resource type="PackedScene" uid="uid://6bax5n7vnnqg" path="res://scenes/tower.tscn" id="3_tower"]
 [ext_resource type="Script" path="res://scripts/wave_manager.gd" id="4_wave_manager"]
-[ext_resource type="PackedScene" path="res://scenes/enemy_fast.tscn" id="5_enemy_fast"]
-[ext_resource type="PackedScene" path="res://scenes/enemy_slow.tscn" id="6_enemy_slow"]
+[ext_resource type="PackedScene" uid="uid://ivl2ykg4pr0c" path="res://scenes/enemy_fast.tscn" id="5_enemy_fast"]
+[ext_resource type="PackedScene" uid="uid://bnfkosq50o484" path="res://scenes/enemy_slow.tscn" id="6_enemy_slow"]
 [ext_resource type="Script" path="res://scripts/combat_manager.gd" id="7_combat_manager"]
 [ext_resource type="Script" path="res://scripts/upgrade_manager.gd" id="8_upgrade_manager"]
 [ext_resource type="PackedScene" uid="uid://butiv5bx0e1gf" path="res://scenes/game_ui.tscn" id="9_game_ui"]

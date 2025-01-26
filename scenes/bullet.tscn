@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://v2glka816rpx"]
 
 [ext_resource type="Script" path="res://scripts/bullet.gd" id="1_bullet"]
+[ext_resource type="Texture2D" uid="uid://bs1ekua7uh18m" path="res://assets/sprites/shuriken.png" id="2_cwdoq"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 4.0
@@ -14,7 +15,11 @@ script = ExtResource("1_bullet")
 shape = SubResource("CircleShape2D_1")
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.921569, 0.337255, 0.294118, 1)
 polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
 
-[connection signal="body_entered" from="." to="." method="_on_body_entered"] 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_cwdoq")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

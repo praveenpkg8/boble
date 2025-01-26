@@ -21,6 +21,7 @@ var can_attack: bool = true
 var knockback_strength: float = 100.0
 var knockback_duration: float = 0.15
 var current_knockback: Vector2 = Vector2.ZERO
+@onready var animated_sprite = $AnimatedSprite2D
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
@@ -60,7 +61,7 @@ func _ready():
 	
 	find_new_target()
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if is_destroyed:
 		return
 		
@@ -72,19 +73,44 @@ func _physics_process(delta):
 		find_new_target()
 		return
 		
-	if current_target:
-		var direction = (current_target.global_position - global_position).normalized()
-		var distance = global_position.distance_to(current_target.global_position)
-		
-		if distance <= attack_range:
-			if can_attack:
-				attack()
-		else:
-			velocity = direction * speed
-			move_and_slide()
-
 	if current_knockback != Vector2.ZERO:
 		velocity = current_knockback
+	else:
+		if current_target:
+			var direction = global_position.direction_to(current_target.global_position)
+			velocity = direction * attacking_force
+			
+			# Only handle animations if AnimatedSprite2D exists
+			if animated_sprite:
+				# Determine animation direction based on movement
+				var angle = direction.angle()
+				# Convert angle to degrees and normalize it to 0-360 range
+				var degrees = rad_to_deg(angle) + 180
+				
+				# Select animation based on 8-directional movement
+				var animation_name = ""
+				if degrees >= 337.5 or degrees < 22.5:
+					animation_name = "left"
+				elif degrees >= 22.5 and degrees < 67.5:
+					animation_name = "left_up"
+				elif degrees >= 67.5 and degrees < 112.5:
+					animation_name = "up"
+				elif degrees >= 112.5 and degrees < 157.5:
+					animation_name = "right_up"
+				elif degrees >= 157.5 and degrees < 202.5:
+					animation_name = "right"
+				elif degrees >= 202.5 and degrees < 247.5:
+					animation_name = "right_down"
+				elif degrees >= 247.5 and degrees < 292.5:
+					animation_name = "down"
+				elif degrees >= 292.5 and degrees < 337.5:
+					animation_name = "left_down"
+				
+				# Play the corresponding animation if it's different
+				if animated_sprite.animation != animation_name:
+					animated_sprite.play(animation_name)
+	
+	move_and_slide()
 
 func _on_body_entered(body: Node2D):
 	print("Character body enetered")
@@ -188,6 +214,8 @@ func attack():
 		return
 		
 	if current_target.has_method("take_damage"):
+		print("Enemy attacking tower: ", current_target.name)
+		print("Damage amount: ", damage)
 		current_target.take_damage(damage)
 	attack_timer = attack_cooldown
 	can_attack = false
@@ -205,19 +233,22 @@ func _on_hitbox_area_entered(area: Area2D):
 		return
 		
 	var parent = area.get_parent()
-	if parent.has_method("take_damage"):
+	if parent is Tower and parent.has_method("take_damage"):
 		if area_damage_radius > 0:
 			apply_area_damage(parent)
 		else:
 			apply_single_damage(parent)
 		
 		can_attack = false
-		attack_timer = 0.0
+		attack_timer = attack_cooldown
 
 func apply_single_damage(target_node: Node2D):
-	if target_node.has_method("take_damage"):
-		print("Enemy dealing damage to: ", target_node.name)
+	if target_node is Tower and target_node.has_method("take_damage"):
+		print("Enemy dealing damage to tower: ", target_node.name)
+		print("Damage amount: ", damage)
 		target_node.take_damage(damage)
+		attack_timer = attack_cooldown
+		can_attack = false
 
 func apply_area_damage(center_target: Node2D):
 	if not tower_manager:
