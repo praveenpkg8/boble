@@ -1,12 +1,12 @@
 extends CharacterBody2D
 
-@export var float_height: float = 2.0  # Desired height above ground
-@export var spring_stiffness: float = 50.0  # Adjust stiffness (higher = faster correction)
-@export var damping: float = 5.0  # Reduces bouncing
-@export var move_speed: float = 300.0  # Movement speed
-@export var rotation_speed: float = 10.0  # Speed at which player rotates to face direction
-@export var mouse_movement_threshold: float = 10.0  # Minimum distance to move to mouse position
-@export var base_damage: float = 10.0
+@export var float_height: float = 2.0 # Desired height above ground
+@export var spring_stiffness: float = 50.0 # Adjust stiffness (higher = faster correction)
+@export var damping: float = 5.0 # Reduces bouncing
+@export var move_speed: float = 300.0 # Movement speed
+@export var rotation_speed: float = 10.0 # Speed at which player rotates to face direction
+@export var mouse_movement_threshold: float = 10.0 # Minimum distance to move to mouse position
+@export var base_damage: float = 30.0
 @export var special_ability_1_cooldown: float = 5.0
 @export var special_ability_2_cooldown: float = 8.0
 
@@ -16,7 +16,7 @@ var is_dead: bool = false
 var viewport_rect: Rect2
 var target_position: Vector2 = Vector2.ZERO
 var is_moving_to_target: bool = false
-var resources: int = 1
+var resources: int = 0
 var max_resources: int = 3
 var is_repairing: bool = false
 var current_repair_tower: Tower = null
@@ -24,16 +24,26 @@ var ability_1_timer: float = 0.0
 var ability_2_timer: float = 0.0
 var combat_manager: CombatManager
 var damage_boost_active: bool = false
-var damage_boost_duration: float = 5.0  # Duration in seconds
-var damage_boost_multiplier: float = 2.0  # Doubles damage
+var damage_boost_duration: float = 5.0 # Duration in seconds
+var damage_boost_multiplier: float = 2.0 # Doubles damage
 var damage_boost_timer: float = 0.0
 var weapon_level: int = 1
 
-@onready var raycast: RayCast2D = $RayCast2D
+# Add new variables for ability scaling
+var ability_q_damage_multiplier: float = 1.0
+var ability_q_radius_multiplier: float = 1.0
+var ability_e_duration_multiplier: float = 1.0
+var ability_e_power_multiplier: float = 1.0
+
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
-func _ready():	
+# Add particle effects for abilities
+@onready var ability_q_particles: GPUParticles2D = $AbilityQParticles
+@onready var ability_e_particles: GPUParticles2D = $AbilityEParticles
+@onready var resource_label = $ResourceLabel
+
+func _ready():
 	print("Starting player initialization...")
 	add_to_group("player")
 	
@@ -58,7 +68,7 @@ func _ready():
 		return
 		
 	add_child(weapon_system)
-	await get_tree().process_frame  # Wait for node to be added to tree
+	await get_tree().process_frame # Wait for node to be added to tree
 	print("weapon_system: ", weapon_system)
 	
 	if weapon_system:
@@ -68,62 +78,42 @@ func _ready():
 		push_error("Weapon system is null after initialization!")
 
 	init_viewport_boundaries()
-	target_position = position  # Initialize target position to current position
+	target_position = position # Initialize target position to current position
 	combat_manager = get_node("../CombatManager")
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
-		return  # Don't process movement if dead
+		return
 	
-	if Input.is_action_just_pressed("ui_accept") and weapon_system:
-		print("Attack is being triggered")
-		weapon_system.attack()
-	
-	# Handle mouse input
-	if Input.is_action_just_pressed("click"):  # Make sure to define this input action
-		target_position = get_viewport().get_mouse_position()
-		target_position = target_position.clamp(viewport_rect.position, viewport_rect.end)
-		is_moving_to_target = true
-	
-	# Calculate movement
+	# Handle movement
 	var movement_vector = Vector2.ZERO
-	
-	# Keyboard input
-	var keyboard_input = Vector2.ZERO
-	keyboard_input.x = Input.get_axis("ui_left", "ui_right")
-	keyboard_input.y = Input.get_axis("ui_up", "ui_down")
-	keyboard_input = keyboard_input.normalized()
-	
-	# If keyboard is being used, override mouse target
-	if keyboard_input != Vector2.ZERO:
-		is_moving_to_target = false
-		movement_vector = keyboard_input
-	# Otherwise, check if we're moving to a mouse target
-	elif is_moving_to_target:
-		var direction_to_target = position.direction_to(target_position)
-		var distance_to_target = position.distance_to(target_position)
-		
-		# Only move if we're far enough from the target
-		if distance_to_target > mouse_movement_threshold:
-			movement_vector = direction_to_target
-		else:
-			is_moving_to_target = false
+	movement_vector.x = Input.get_axis("left", "right")
+	movement_vector.y = Input.get_axis("up", "down")
+	movement_vector = movement_vector.normalized()
 	
 	# Apply movement
 	if movement_vector != Vector2.ZERO:
 		velocity = movement_vector * move_speed
-		# Smoothly rotate to face movement direction
-		rotation = lerp_angle(rotation, movement_vector.angle(), rotation_speed * delta)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, move_speed * delta)
 	
-	# Move and check boundaries
 	move_and_slide()
-	# clamp_to_viewport()
+	
+	# Handle aiming and shooting
+	var mouse_pos = get_viewport().get_mouse_position()
+	var direction = (mouse_pos - global_position).normalized()
+	
+	# Smoothly rotate to face mouse
+	var target_angle = direction.angle()
+	rotation = lerp_angle(rotation, target_angle, 10.0 * delta)
+	
+	# Handle shooting
+	if Input.is_action_pressed("click") and weapon_system:
+		weapon_system.attack()
 
 func _input(event: InputEvent) -> void:
 	# Handle right-click to cancel movement to target
-	if event.is_action_pressed("click"):  # Make sure to define this input action
+	if event.is_action_pressed("click"): # Make sure to define this input action
 		is_moving_to_target = false
 		velocity = Vector2.ZERO
 
@@ -150,12 +140,11 @@ func take_damage(amount: float):
 		queue_free()
 
 func _on_health_depleted():
-	if not is_dead:  # Ensure death logic runs only once
+	if not is_dead: # Ensure death logic runs only once
 		is_dead = true
 		print("Player died!")
-		SoundManager.play_sound("player_death", -5.0)  # Slightly lower volume for death sound
 		# Add visual effects for death
-		modulate = Color(1, 0.3, 0.3, 0.7)  # Red tint and fade
+		modulate = Color(1, 0.3, 0.3, 0.7) # Red tint and fade
 		# Optionally disable collision
 		set_collision_layer_value(1, false)
 		set_collision_mask_value(1, false)
@@ -178,9 +167,9 @@ func _process(delta: float):
 	if Input.is_action_just_pressed("repair") and resources > 0:
 		try_repair_nearest_tower()
 	
-	if is_repairing and (Input.is_action_just_pressed("move_left") or 
-		Input.is_action_just_pressed("move_right") or 
-		Input.is_action_just_pressed("move_up") or 
+	if is_repairing and (Input.is_action_just_pressed("move_left") or
+		Input.is_action_just_pressed("move_right") or
+		Input.is_action_just_pressed("move_up") or
 		Input.is_action_just_pressed("move_down")):
 		interrupt_repair()
 	
@@ -192,21 +181,21 @@ func _process(delta: float):
 	
 	# Check for ability inputs
 	if Input.is_action_just_pressed("ability_1") and ability_1_timer <= 0:
-		use_special_ability_1()
+		use_ability_1()
 	if Input.is_action_just_pressed("ability_2") and ability_2_timer <= 0:
-		use_special_ability_2()
+		use_ability_2()
 	
 	# Handle damage boost duration
 	if damage_boost_active:
 		damage_boost_timer -= delta
 		if damage_boost_timer <= 0:
 			damage_boost_active = false
-			modulate = Color(1, 1, 1, 1)  # Reset color
+			modulate = Color(1, 1, 1, 1) # Reset color
 			print("Damage boost ended")
 
 func try_repair_nearest_tower():
 	var nearest_tower = find_nearest_damaged_tower()
-	if nearest_tower and nearest_tower.start_repair(50.0):  # Repair amount
+	if nearest_tower and nearest_tower.start_repair(50.0): # Repair amount
 		resources -= 1
 		is_repairing = true
 		current_repair_tower = nearest_tower
@@ -220,7 +209,7 @@ func interrupt_repair():
 
 func find_nearest_damaged_tower() -> Tower:
 	var towers = get_tree().get_nodes_in_group("towers")
-	var nearest_distance = 100.0  # Maximum repair distance
+	var nearest_distance = 100.0 # Maximum repair distance
 	var nearest_tower = null
 	
 	for tower in towers:
@@ -240,89 +229,81 @@ func collect_resource(resource: GameResource):
 	if resources < max_resources:
 		resources += 1
 
-func use_special_ability_1():
-	print("Special Ability 1 (Q) activated")
-	# Area damage to nearby enemies
-	var radius = 150.0
-	var base_damage = 50.0
-	
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	var enemies_hit = 0
-	
-	for enemy in enemies:
-		if is_instance_valid(enemy):
-			var distance = global_position.distance_to(enemy.global_position)
-			if distance <= radius:
-				# Calculate damage falloff based on distance
-				var damage_multiplier = 2.3 - (distance / radius)
-				var final_damage = base_damage * damage_multiplier
-				print("Final damage: ", final_damage)
-				print("Attempting to damage enemy at distance: ", distance)
-				enemy.take_damage(final_damage)
-				enemies_hit += 1
-	
-	print("Q ability hit ", enemies_hit, " enemies")
-	ability_1_timer = special_ability_1_cooldown
-	spawn_ability_1_effect(radius)
+func use_ability_1():
+	if ability_1_timer <= 0.0:
+		var damage = base_damage * ability_q_damage_multiplier
+		var radius = 150.0 * ability_q_radius_multiplier
+		
+		# Update particle effects
+		if ability_q_particles:
+			ability_q_particles.scale = Vector2.ONE * ability_q_radius_multiplier
+			ability_q_particles.amount = int(20 * ability_q_damage_multiplier)
+			ability_q_particles.emitting = true
+		
+		# Apply ability effect
+		var enemies = get_tree().get_nodes_in_group("enemies")
+		var enemies_hit = 0
+		SoundManager.play_sound("ability_used")
+		for enemy in enemies:
+			if is_instance_valid(enemy):
+				var distance = global_position.distance_to(enemy.global_position)
+				if distance <= radius:
+					# Calculate damage falloff based on distance
+					var damage_multiplier = 10 - (distance / radius)
+					var final_damage = damage * damage_multiplier
+					print("Final damage: ", final_damage)
+					print("Attempting to damage enemy at distance: ", distance)
+					enemy.take_damage(final_damage)
+					enemies_hit += 1
+		
+		print("Q ability hit ", enemies_hit, " enemies")
+		ability_1_timer = special_ability_1_cooldown
 
-func use_special_ability_2():
-	print("Special Ability 2 (E) activated - Damage Boost")
-	# Activate damage boost
-	damage_boost_active = true
-	damage_boost_timer = damage_boost_duration
-	
-	# Visual feedback
-	modulate = Color(1.0, 0.5, 0.0, 1.0)  # Orange glow
-	
-	# Start cooldown
-	ability_2_timer = special_ability_2_cooldown
+func use_ability_2():
+	if ability_2_timer <= 0.0:
+		damage_boost_active = true
+		damage_boost_timer = 0.0
+		damage_boost_duration = 5.0 * ability_e_duration_multiplier
+		damage_boost_multiplier = 2.0 * ability_e_power_multiplier
+		
+		# Update particle effects
+		if ability_e_particles:
+			ability_e_particles.scale = Vector2.ONE * ability_e_power_multiplier
+			ability_e_particles.amount = int(30 * ability_e_duration_multiplier)
+			ability_e_particles.emitting = true
+		
+		ability_2_timer = special_ability_2_cooldown
 
-func spawn_ability_1_effect(radius: float):
-	var effect = Node2D.new()
-	add_child(effect)
-	
-	# Create the visual circle
-	effect.draw.connect(func():
-		var center = Vector2.ZERO
-		var points = PackedVector2Array()
-		var num_points = 32
-		for i in range(num_points + 1):
-			var angle = i * 2 * PI / num_points
-			points.push_back(center + Vector2(cos(angle), sin(angle)) * radius)
-		effect.draw_colored_polygon(points, Color(1, 0, 0, 0.3))
-	)
-	
-	# Create timer as child of effect
-	var timer = Timer.new()
-	timer.wait_time = 0.5
-	timer.one_shot = true
-	effect.add_child(timer)
-	timer.timeout.connect(func(): effect.queue_free())
-	timer.start()
+func apply_upgrade(upgrade_id: String) -> void:
+	match upgrade_id:
+		"q_damage":
+			ability_q_damage_multiplier *= 1.2
+			update_ability_visuals()
+		"q_radius":
+			ability_q_radius_multiplier *= 1.15
+			update_ability_visuals()
+		"e_duration":
+			ability_e_duration_multiplier *= 1.2
+			update_ability_visuals()
+		"e_power":
+			ability_e_power_multiplier *= 1.15
+			update_ability_visuals()
 
-func spawn_ability_2_effect():
-	var effect = Node2D.new()
-	add_child(effect)
+func update_ability_visuals() -> void:
+	# Update Q ability particles
+	if ability_q_particles:
+		var q_intensity = (ability_q_damage_multiplier + ability_q_radius_multiplier) / 2.0
+		ability_q_particles.modulate = Color(1.0, 0.5 + q_intensity * 0.5, 0.0, 1.0)
 	
-	# Create the visual circle
-	effect.draw.connect(func():
-		var center = Vector2.ZERO
-		var points = PackedVector2Array()
-		var num_points = 16
-		for i in range(num_points + 1):
-			var angle = i * 2 * PI / num_points
-			points.push_back(center + Vector2(cos(angle), sin(angle)) * 20)
-		effect.draw_colored_polygon(points, Color(0, 1, 0, 0.5))
-	)
-	
-	# Create timer as child of effect
-	var timer = Timer.new()
-	timer.wait_time = 0.5
-	timer.one_shot = true
-	effect.add_child(timer)
-	timer.timeout.connect(func(): effect.queue_free())
-	timer.start()
+	# Update E ability particles
+	if ability_e_particles:
+		var e_intensity = (ability_e_duration_multiplier + ability_e_power_multiplier) / 2.0
+		ability_e_particles.modulate = Color(0.0, 0.5 + e_intensity * 0.5, 1.0, 1.0)
 
 func get_current_damage() -> float:
 	var current_damage = base_damage * weapon_level
 	return current_damage * (damage_boost_multiplier if damage_boost_active else 1.0)
+
+func update_resource_label():
+	if resource_label:
+		resource_label.text = str(resources) + "/" + str(max_resources)

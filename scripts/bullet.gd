@@ -24,5 +24,5 @@ func _physics_process(delta: float):
 
 func _on_body_entered(body: Node2D):
     if body is Enemy:
-        body.take_damage(damage)
+        body.take_damage(damage, direction)
         queue_free() 

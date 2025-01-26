@@ -1,32 +1,36 @@
 class_name Tower
 extends StaticBody2D
 
-signal health_changed(current_health: float, max_health: float)
 signal tower_destroyed(tower: Tower)
-signal repair_started
+signal health_changed(current: float, max: float)
 signal repair_completed
-signal repair_interrupted
 
-@export var max_health: float = 150.0
-@export var current_health: float = 150.0
-@export var repair_time: float = 4.0
-@export var min_distance_between_towers: float = 200.0
+@export var max_health: float = 100.0
+@export var min_distance_between_towers: float = 150.0
 
+var current_health: float
 var is_being_repaired: bool = false
-var repair_progress: float = 0.0
-var repair_amount: float = 0.0
-
-@onready var health_indicator: Node2D = $HealthIndicator
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var sprite: Polygon2D = $Polygon2D
-@onready var repair_indicator: Node2D = $RepairIndicator
-
 var is_destroyed: bool = false
+
+@onready var health_indicator = $HealthIndicator
+@onready var repair_indicator = $RepairIndicator
 
 func _ready():
 	current_health = max_health
 	update_health_indicator()
 	repair_indicator.visible = false
+	is_destroyed = false
+	add_to_group("towers")
+
+@export var repair_time: float = 4.0
+var repair_progress: float = 0.0
+var repair_amount: float = 0.0
+
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var sprite: Polygon2D = $Polygon2D
+
+signal repair_started
+signal repair_interrupted
 
 func _process(delta: float):
 	if is_being_repaired:
@@ -88,8 +92,9 @@ func update_health_indicator():
 	health_changed.emit(current_health, max_health)
 
 func destroy():
-	if not is_destroyed:
+	if not is_destroyed and is_inside_tree():
 		is_destroyed = true
+		remove_from_group("towers")
 		tower_destroyed.emit(self)
 		queue_free()
 

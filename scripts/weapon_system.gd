@@ -4,6 +4,8 @@ extends Node2D
 var weapon: Weapon
 var vfx_system: VFXSystem
 var weapon_scene = preload("res://scenes/weapon.tscn")
+var attack_cooldown: float = 0.2  # Time between shots
+var current_cooldown: float = 0.0
 
 func _ready():
 	print("WeaponSystem _ready called")
@@ -29,12 +31,17 @@ func init(_vfx_system: VFXSystem):
 	print("WeaponSystem init called with vfx_system: ", _vfx_system)
 	vfx_system = _vfx_system
 
+func _process(delta: float):
+	if current_cooldown > 0:
+		current_cooldown -= delta
+
 func attack():
-	if weapon:
+	if current_cooldown <= 0 and weapon:
 		print("Attacking with weapon")
 		weapon.attack()
+		current_cooldown = attack_cooldown
 	else:
-		push_error("No weapon available!")
+		print("Attack on cooldown")
 
 func _on_weapon_attack_performed():
 	print("weapon attack performed")
