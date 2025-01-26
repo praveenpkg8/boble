@@ -43,7 +43,7 @@ func perform_attack(weapon_node: Node2D, direction: Vector2 = Vector2.RIGHT):
 			weapon_node.get_tree().current_scene.add_child(bullet)
 			bullet.init(
 				weapon_node.global_position,
-				Vector2.RIGHT.rotated(weapon_node.global_rotation),
+				direction,
 				projectile_speed,
 				projectile_damage,
 				max_range

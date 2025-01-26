@@ -118,11 +118,14 @@ func _physics_process(delta: float) -> void:
 	
 	# Smoothly rotate to face mouse
 	var target_angle = direction.angle()
-	rotation = lerp_angle(rotation, target_angle, 10.0 * delta)
+	# rotation = lerp_angle(rotation, target_angle, 10.0 * delta)
 	
 	# Handle shooting with correct direction
 	if Input.is_action_pressed("click") and weapon_system:
-		weapon_system.attack(direction)  # Pass the direction to weapon system
+		# Calculate direction from player to mouse
+		var shoot_direction = (mouse_pos - global_position).normalized()
+		print("shoot directon ", shoot_direction)
+		weapon_system.attack(shoot_direction)  # Pass the mouse-based direction
 
 func _input(event: InputEvent) -> void:
 	# Handle right-click to cancel movement to target
