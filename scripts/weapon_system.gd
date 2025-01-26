@@ -35,10 +35,9 @@ func _process(delta: float):
 	if current_cooldown > 0:
 		current_cooldown -= delta
 
-func attack():
+func attack(direction: Vector2):
 	if current_cooldown <= 0 and weapon:
-		print("Attacking with weapon")
-		weapon.attack()
+		weapon.attack_with_direction(direction)
 		current_cooldown = attack_cooldown
 	else:
 		print("Attack on cooldown")

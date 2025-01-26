@@ -2,8 +2,8 @@ class_name WeaponResource
 extends Resource
 
 enum WeaponType {
-    MELEE,
-    RANGED
+	MELEE,
+	RANGED
 }
 
 @export var weapon_name: String = "Base Weapon"
@@ -23,28 +23,28 @@ enum WeaponType {
 
 var bullet_scene = preload("res://scenes/bullet.tscn")
 
-func perform_attack(weapon_node: Node2D):
-    match weapon_type:
-        WeaponType.MELEE:
-            var space_state = weapon_node.get_world_2d().direct_space_state
-            var query = PhysicsRayQueryParameters2D.create(
-                weapon_node.global_position,
-                weapon_node.global_position + Vector2.RIGHT.rotated(weapon_node.global_rotation) * melee_range,
-                2  # Collision mask for enemies
-            )
-            var result = space_state.intersect_ray(query)
-            
-            if result and result.collider is Enemy:
-                print("Hit enemy with melee attack!")
-                result.collider.take_damage(melee_damage)
-            
-        WeaponType.RANGED:
-            var bullet = bullet_scene.instantiate()
-            weapon_node.get_tree().current_scene.add_child(bullet)
-            bullet.init(
-                weapon_node.global_position,
-                Vector2.RIGHT.rotated(weapon_node.global_rotation),
-                projectile_speed,
-                projectile_damage,
-                max_range
-            ) 
+func perform_attack(weapon_node: Node2D, direction: Vector2 = Vector2.RIGHT):
+	match weapon_type:
+		WeaponType.MELEE:
+			var space_state = weapon_node.get_world_2d().direct_space_state
+			var query = PhysicsRayQueryParameters2D.create(
+				weapon_node.global_position,
+				weapon_node.global_position + Vector2.RIGHT.rotated(weapon_node.global_rotation) * melee_range,
+				2  # Collision mask for enemies
+			)
+			var result = space_state.intersect_ray(query)
+			
+			if result and result.collider is Enemy:
+				print("Hit enemy with melee attack!")
+				result.collider.take_damage(melee_damage)
+			
+		WeaponType.RANGED:
+			var bullet = bullet_scene.instantiate()
+			weapon_node.get_tree().current_scene.add_child(bullet)
+			bullet.init(
+				weapon_node.global_position,
+				Vector2.RIGHT.rotated(weapon_node.global_rotation),
+				projectile_speed,
+				projectile_damage,
+				max_range
+			) 

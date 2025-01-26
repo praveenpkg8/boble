@@ -99,17 +99,17 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 	
-	# Handle aiming and shooting
-	var mouse_pos = get_viewport().get_mouse_position()
+	# Get mouse position in global coordinates
+	var mouse_pos = get_global_mouse_position()
 	var direction = (mouse_pos - global_position).normalized()
 	
 	# Smoothly rotate to face mouse
 	var target_angle = direction.angle()
 	rotation = lerp_angle(rotation, target_angle, 10.0 * delta)
 	
-	# Handle shooting
+	# Handle shooting with correct direction
 	if Input.is_action_pressed("click") and weapon_system:
-		weapon_system.attack()
+		weapon_system.attack(direction)  # Pass the direction to weapon system
 
 func _input(event: InputEvent) -> void:
 	# Handle right-click to cancel movement to target

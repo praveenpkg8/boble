@@ -61,8 +61,12 @@ func _on_tower_destroyed():
 	# Add a delay to ensure proper cleanup
 	await get_tree().create_timer(0.1).timeout
 	
-	# Filter out invalid towers
-	towers = towers.filter(func(tower): return is_instance_valid(tower))
+	# Filter out invalid towers and destroyed towers
+	towers = towers.filter(func(tower): 
+		return is_instance_valid(tower) and !tower.is_destroyed
+	)
+	
+	print("Towers remaining: ", towers.size())
 	
 	# Only emit if all towers are actually destroyed
 	if towers.is_empty():

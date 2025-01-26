@@ -17,6 +17,9 @@ func init():
 	print("Weapon initialized with resource: ", weapon_resource.weapon_name)
 
 func attack():
+	attack_with_direction(Vector2.RIGHT)
+
+func attack_with_direction(direction: Vector2):
 	if not weapon_resource:
 		push_error("Cannot attack - no weapon resource!")
 		return
@@ -28,12 +31,8 @@ func attack():
 			SoundManager.play_sound("shoot")
 	
 	print("Performing attack with: ", weapon_resource.weapon_name)
-	weapon_resource.perform_attack(self)
+	weapon_resource.perform_attack(self, direction)
 	attack_performed.emit()
-
-
-
-
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
