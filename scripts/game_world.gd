@@ -22,6 +22,7 @@ func _ready() -> void:
 	# Initialize managers first
 	if wave_manager:
 		wave_manager.start_wave_system()
+		wave_manager.wave_completed.connect(_on_wave_completed)
 	
 	# Initialize UI connections
 	if wave_manager and ui_manager:
@@ -67,3 +68,7 @@ func _on_all_towers_destroyed():
 	if tower_manager and tower_manager.towers.is_empty():
 		if ui_manager and !ui_manager.game_over:
 			ui_manager._on_game_over()
+
+func _on_wave_completed(wave_number: int) -> void:
+	if tower_manager:
+		tower_manager.restore_towers_health()

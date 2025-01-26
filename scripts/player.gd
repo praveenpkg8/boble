@@ -9,6 +9,8 @@ extends CharacterBody2D
 @export var base_damage: float = 30.0
 @export var special_ability_1_cooldown: float = 5.0
 @export var special_ability_2_cooldown: float = 8.0
+@export var particle_effect_scene: PackedScene
+@export var effect_radius: float = 100.0
 
 var weapon_system: WeaponSystem
 var vfx_system: VFXSystem
@@ -127,6 +129,9 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("click"): # Make sure to define this input action
 		is_moving_to_target = false
 		velocity = Vector2.ZERO
+	
+	if event.is_action_pressed("your_button_action"):  # Replace with your input action
+		create_particle_effect()
 
 func clamp_to_viewport():
 	position.x = clamp(position.x, viewport_rect.position.x, viewport_rect.end.x)
@@ -318,3 +323,10 @@ func get_current_damage() -> float:
 func update_resource_label():
 	if resource_label:
 		resource_label.text = str(resources) + "/" + str(max_resources)
+
+func create_particle_effect() -> void:
+	if particle_effect_scene:
+		var effect = particle_effect_scene.instantiate()
+		get_tree().current_scene.add_child(effect)
+		effect.global_position = global_position
+		effect.trigger_effect(effect_radius)

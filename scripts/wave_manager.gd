@@ -12,6 +12,7 @@ const WAVE_GAP_TIME = 5.0
 const INITIAL_SPAWN_PERCENTAGE = 0.35
 const SKIP_HEALTH_INCREASE = 0.05
 const SKIP_DAMAGE_INCREASE = 0.03
+const SPAWN_INTERVAL: float = 1.0  # Time between individual enemy spawns
 
 const WORLD_BOUNDS = {
 	"left": 0,
@@ -30,6 +31,8 @@ var is_wave_active: bool = false
 var active_enemies: Array[Enemy] = []
 var difficulty_multiplier: float = 1.0
 var is_cleaning_up: bool = false
+var spawn_timer: float = 0.0
+var can_spawn: bool = true
 
 @onready var tower_manager: TowerManager = get_node_or_null("../TowerManager")
 @onready var upgrade_manager: UpgradeManager = get_node_or_null("../UpgradeManager")
@@ -52,15 +55,21 @@ func start_wave_system():
 func start_next_wave():
 	current_wave += 1
 	if current_wave <= WAVE_COUNTS.size():
+		is_wave_active = true
 		enemies_remaining = WAVE_COUNTS[current_wave - 1]
 		enemies_to_spawn = enemies_remaining
+		spawn_timer = 0.0
+		can_spawn = true
+		print("Starting wave ", current_wave, " with ", enemies_to_spawn, " enemies")
 		wave_started.emit(current_wave, enemies_remaining)
 		
 		# Spawn initial wave of enemies
 		var initial_spawn = ceil(enemies_to_spawn * INITIAL_SPAWN_PERCENTAGE)
 		for i in range(initial_spawn):
-			spawn_wave_enemies()
-			enemies_to_spawn -= 1
+			if enemies_to_spawn > 0:
+				spawn_wave_enemies()
+				enemies_to_spawn -= 1
+				await get_tree().create_timer(0.2).timeout
 
 func cleanup():
 	is_cleaning_up = true
@@ -77,12 +86,15 @@ func cleanup():
 
 func _on_enemy_destroyed(enemy: Enemy):
 	enemies_remaining = max(0, enemies_remaining - 1)
+	active_enemies.erase(enemy)  # Remove from active enemies list
 	enemy_count_updated.emit(enemies_remaining)
 	print("Enemy destroyed. Remaining: ", enemies_remaining)
+	print("Enemies to spawn: ", enemies_to_spawn)
+	print("Active enemies: ", active_enemies.size())
 	
 	# Check if wave is complete
-	if enemies_remaining == 0 and enemies_to_spawn == 0:
-		print("Wave completed!")
+	if enemies_remaining == 0 and enemies_to_spawn == 0 and active_enemies.is_empty():
+		print("Wave ", current_wave, " completed!")
 		wave_completed.emit(current_wave)
 		
 		# Check if this was the last wave
@@ -90,7 +102,7 @@ func _on_enemy_destroyed(enemy: Enemy):
 			print("All waves completed!")
 			all_waves_completed.emit()
 		else:
-			# Start next wave after delay
+			print("Starting wave ", current_wave + 1, " after delay")
 			await get_tree().create_timer(WAVE_GAP_TIME).timeout
 			start_next_wave()
 
@@ -162,3 +174,12 @@ func get_random_spawn_position() -> Vector2:
 
 func update_difficulty(skips: int) -> void:
 	difficulty_multiplier = 1.0 + (skips * SKIP_HEALTH_INCREASE)
+
+func _physics_process(delta: float):
+	if enemies_to_spawn > 0 and can_spawn:
+		spawn_timer += delta
+		if spawn_timer >= SPAWN_INTERVAL:
+			spawn_timer = 0.0
+			spawn_wave_enemies()
+			enemies_to_spawn -= 1
+			print("Spawned enemy. Remaining to spawn: ", enemies_to_spawn)
