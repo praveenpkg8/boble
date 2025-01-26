@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://butiv5bx0e1gf"]
+[gd_scene load_steps=3 format=3 uid="uid://butiv5bx0e1gf"]
 
 [ext_resource type="Script" path="res://scripts/ui_manager.gd" id="1_ui"]
+[ext_resource type="PackedScene" path="res://scenes/upgrade_ui.tscn" id="2_upgrade_ui"]
 
 [node name="GameUI" type="CanvasLayer"]
 script = ExtResource("1_ui")
@@ -39,9 +40,17 @@ offset_bottom = 86.0
 layout_mode = 2
 text = "Score: 0"
 
-[node name="MultiplierLabel" type="Label" parent="ScoreInfo"]
+[node name="MultiplierInfo" type="HBoxContainer" parent="ScoreInfo"]
+layout_mode = 2
+
+[node name="MultiplierLabel" type="Label" parent="ScoreInfo/MultiplierInfo"]
 layout_mode = 2
 text = "x1.00"
+
+[node name="SkipBonus" type="Label" parent="ScoreInfo/MultiplierInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 1, 0.5, 1)
+text = "(+0.00)"
 
 [node name="ResourceInfo" type="VBoxContainer" parent="."]
 anchors_preset = 2
@@ -176,6 +185,8 @@ text = "Play Again"
 [node name="QuitButton" type="Button" parent="VictoryPanel/VBoxContainer"]
 layout_mode = 2
 text = "Quit"
+
+[node name="UpgradeUI" parent="." instance=ExtResource("2_upgrade_ui")]
 
 [connection signal="button_down" from="GameOverPanel/VBoxContainer/RestartButton" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="GameOverPanel/VBoxContainer/RestartButton" to="." method="_on_restart_pressed"]

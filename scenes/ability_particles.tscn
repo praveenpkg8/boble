@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="ParticlesMaterial" id="ParticlesMaterial_1"]
+emission_shape = 1
+emission_sphere_radius = 5.0
+gravity = Vector3(0, 0, 0)
+scale = 1.0
+color = Color(1, 0.5, 0, 1)
+
+[sub_resource type="ParticlesMaterial" id="ParticlesMaterial_2"]
+emission_shape = 1
+emission_sphere_radius = 5.0
+gravity = Vector3(0, 0, 0)
+scale = 1.0
+color = Color(0, 0.5, 1, 1)
+
+[node name="AbilityParticles" type="Node2D"]
+
+[node name="AbilityQParticles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 20
+process_material = SubResource("ParticlesMaterial_1")
+lifetime = 0.5
+one_shot = true
+explosiveness = 0.8
+
+[node name="AbilityEParticles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 30
+process_material = SubResource("ParticlesMaterial_2")
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.6 
