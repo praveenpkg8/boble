@@ -9,7 +9,7 @@
 [ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/follow_through.gd" id="7_irdnq"]
 [ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/attack.gd" id="8_jardk"]
 [ext_resource type="Script" path="res://scripts/BehaviourAi/leaf_nodes/patrol.gd" id="9_x4q44"]
-[ext_resource type="Texture2D" uid="uid://b2jmf0oe1tft8" path="res://assets/sprites/slime.png" id="10_qvlvr"]
+[ext_resource type="Texture2D" uid="uid://sku8fsuyr840" path="res://assets/sprites/slime.png" id="10_qvlvr"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(32, 32)

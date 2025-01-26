@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://v2glka816rpx"]
+[gd_scene load_steps=4 format=3 uid="uid://ki3do7rr3y7q"]
 
 [ext_resource type="Script" path="res://scripts/bullet.gd" id="1_bullet"]
-[ext_resource type="Texture2D" uid="uid://bs1ekua7uh18m" path="res://assets/sprites/shuriken.png" id="2_cwdoq"]
+[ext_resource type="Texture2D" uid="uid://ettvlw8m61rr" path="res://assets/sprites/shuriken.png" id="2_cwdoq"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 4.0

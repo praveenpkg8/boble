@@ -1,7 +1,7 @@
-[gd_scene load_steps=22 format=3 uid="uid://bnfkosq50o484"]
+[gd_scene load_steps=22 format=3 uid="uid://de63xyhk55j86"]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
-[ext_resource type="Texture2D" uid="uid://b2jmf0oe1tft8" path="res://assets/sprites/slime.png" id="2_x81jj"]
+[ext_resource type="Texture2D" uid="uid://sku8fsuyr840" path="res://assets/sprites/slime.png" id="2_x81jj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(10, 8)

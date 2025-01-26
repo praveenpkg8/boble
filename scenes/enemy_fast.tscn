@@ -1,7 +1,7 @@
-[gd_scene load_steps=19 format=3 uid="uid://ivl2ykg4pr0c"]
+[gd_scene load_steps=19 format=3 uid="uid://dvbpciohaatwk"]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_enemy"]
-[ext_resource type="Texture2D" uid="uid://dollwf605r73m" path="res://assets/sprites/evil_dude.png" id="2_rr823"]
+[ext_resource type="Texture2D" uid="uid://dwlyjah0tlmtk" path="res://assets/sprites/evil_dude.png" id="2_rr823"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(10, 17.875)

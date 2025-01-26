@@ -1,24 +1,22 @@
 [gd_scene load_steps=13 format=3 uid="uid://du3y0uylfolor"]
 
 [ext_resource type="Script" path="res://scripts/game_world.gd" id="1_game_world"]
-[ext_resource type="PackedScene" uid="uid://b35qxu6ae6sxh" path="res://scenes/tilemap.tscn" id="2_b2elf"]
+[ext_resource type="PackedScene" uid="uid://cjfeshewp0ld0" path="res://scenes/tilemap.tscn" id="2_b2elf"]
 [ext_resource type="Script" path="res://scripts/tower_manager.gd" id="2_tower_manager"]
-[ext_resource type="PackedScene" uid="uid://6bax5n7vnnqg" path="res://scenes/tower.tscn" id="3_tower"]
+[ext_resource type="PackedScene" uid="uid://divmcphcjgrqc" path="res://scenes/tower.tscn" id="3_tower"]
 [ext_resource type="Script" path="res://scripts/wave_manager.gd" id="4_wave_manager"]
-[ext_resource type="PackedScene" uid="uid://ivl2ykg4pr0c" path="res://scenes/enemy_fast.tscn" id="5_enemy_fast"]
-[ext_resource type="PackedScene" uid="uid://bnfkosq50o484" path="res://scenes/enemy_slow.tscn" id="6_enemy_slow"]
+[ext_resource type="PackedScene" uid="uid://dvbpciohaatwk" path="res://scenes/enemy_fast.tscn" id="5_enemy_fast"]
+[ext_resource type="PackedScene" uid="uid://de63xyhk55j86" path="res://scenes/enemy_slow.tscn" id="6_enemy_slow"]
 [ext_resource type="Script" path="res://scripts/combat_manager.gd" id="7_combat_manager"]
 [ext_resource type="Script" path="res://scripts/upgrade_manager.gd" id="8_upgrade_manager"]
 [ext_resource type="PackedScene" uid="uid://butiv5bx0e1gf" path="res://scenes/game_ui.tscn" id="9_game_ui"]
 [ext_resource type="PackedScene" uid="uid://bb6dccefs17vb" path="res://scenes/player.tscn" id="10_player"]
-[ext_resource type="AudioStream" uid="uid://bulrxq127vg01" path="res://assets/sounds/general_world_sound.mp3" id="11_51343"]
+[ext_resource type="AudioStream" uid="uid://c4ammbkpaagq0" path="res://assets/sounds/general_world_sound.mp3" id="11_51343"]
 
 [node name="GameWorld" type="Node2D"]
 script = ExtResource("1_game_world")
 
 [node name="Node2D" parent="." instance=ExtResource("2_b2elf")]
-
-[node name="Player" parent="." instance=ExtResource("10_player")]
 
 [node name="TowerManager" type="Node" parent="."]
 script = ExtResource("2_tower_manager")
@@ -34,6 +32,9 @@ script = ExtResource("7_combat_manager")
 
 [node name="UpgradeManager" type="Node" parent="."]
 script = ExtResource("8_upgrade_manager")
+
+[node name="Player" parent="." instance=ExtResource("10_player")]
+z_index = 1
 
 [node name="GameUI" parent="." instance=ExtResource("9_game_ui")]
 

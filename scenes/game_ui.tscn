@@ -53,6 +53,7 @@ theme_override_colors/font_color = Color(0.5, 1, 0.5, 1)
 text = "(+0.00)"
 
 [node name="ResourceInfo" type="VBoxContainer" parent="."]
+visible = false
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -62,6 +63,7 @@ offset_right = 200.0
 offset_bottom = -20.0
 
 [node name="ResourceCount" type="Label" parent="ResourceInfo"]
+visible = false
 layout_mode = 2
 text = "Resources: 0/3"
 
@@ -84,7 +86,7 @@ size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="AbilityInfo/Ability1"]
 layout_mode = 2
-text = "Q - Area Damage"
+text = "X - Area Damage"
 horizontal_alignment = 1
 
 [node name="Cooldown" type="ProgressBar" parent="AbilityInfo/Ability1"]
@@ -97,7 +99,7 @@ size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="AbilityInfo/Ability2"]
 layout_mode = 2
-text = "E - Damage Boost"
+text = "C - Damage Boost"
 horizontal_alignment = 1
 
 [node name="Cooldown" type="ProgressBar" parent="AbilityInfo/Ability2"]
