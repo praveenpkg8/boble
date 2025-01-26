@@ -1,6 +1,7 @@
-[gd_scene load_steps=12 format=3 uid="uid://du3y0uylfolor"]
+[gd_scene load_steps=13 format=3 uid="uid://du3y0uylfolor"]
 
 [ext_resource type="Script" path="res://scripts/game_world.gd" id="1_game_world"]
+[ext_resource type="PackedScene" uid="uid://b35qxu6ae6sxh" path="res://scenes/tilemap.tscn" id="2_b2elf"]
 [ext_resource type="Script" path="res://scripts/tower_manager.gd" id="2_tower_manager"]
 [ext_resource type="PackedScene" uid="uid://6bax5n7vnnqg" path="res://scenes/tower.tscn" id="3_tower"]
 [ext_resource type="Script" path="res://scripts/wave_manager.gd" id="4_wave_manager"]
@@ -14,6 +15,8 @@
 
 [node name="GameWorld" type="Node2D"]
 script = ExtResource("1_game_world")
+
+[node name="Node2D" parent="." instance=ExtResource("2_b2elf")]
 
 [node name="Player" parent="." instance=ExtResource("10_player")]
 

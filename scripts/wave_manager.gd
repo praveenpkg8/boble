@@ -13,6 +13,13 @@ const INITIAL_SPAWN_PERCENTAGE = 0.35
 const SKIP_HEALTH_INCREASE = 0.05
 const SKIP_DAMAGE_INCREASE = 0.03
 
+const WORLD_BOUNDS = {
+	"left": 0,
+	"right": 1280,
+	"top": 0,
+	"bottom": 720
+}
+
 @export var enemy_scene_fast: PackedScene
 @export var enemy_scene_slow: PackedScene
 
@@ -126,18 +133,30 @@ func spawn_wave_enemies():
 	print("Enemy spawned. Remaining enemies: ", enemies_remaining) # Debug print
 
 func get_random_spawn_position() -> Vector2:
-	var viewport_size = get_viewport().get_visible_rect().size
-	var side = randi() % 4 # 0: top, 1: right, 2: bottom, 3: left
+	var margin = 50  # Distance outside the visible area to spawn
+	var side = randi() % 4  # 0: top, 1: right, 2: bottom, 3: left
 	
 	match side:
-		0: # Top
-			return Vector2(randf_range(0, viewport_size.x), -50)
-		1: # Right
-			return Vector2(viewport_size.x + 50, randf_range(0, viewport_size.y))
-		2: # Bottom
-			return Vector2(randf_range(0, viewport_size.x), viewport_size.y + 50)
-		3: # Left
-			return Vector2(-50, randf_range(0, viewport_size.y))
+		0:  # Top
+			return Vector2(
+				randf_range(WORLD_BOUNDS.left + margin, WORLD_BOUNDS.right - margin),
+				WORLD_BOUNDS.top - margin
+			)
+		1:  # Right
+			return Vector2(
+				WORLD_BOUNDS.right + margin,
+				randf_range(WORLD_BOUNDS.top + margin, WORLD_BOUNDS.bottom - margin)
+			)
+		2:  # Bottom
+			return Vector2(
+				randf_range(WORLD_BOUNDS.left + margin, WORLD_BOUNDS.right - margin),
+				WORLD_BOUNDS.bottom + margin
+			)
+		3:  # Left
+			return Vector2(
+				WORLD_BOUNDS.left - margin,
+				randf_range(WORLD_BOUNDS.top + margin, WORLD_BOUNDS.bottom - margin)
+			)
 	
 	return Vector2.ZERO
 

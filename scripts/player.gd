@@ -43,6 +43,13 @@ var ability_e_power_multiplier: float = 1.0
 @onready var ability_e_particles: GPUParticles2D = $AbilityEParticles
 @onready var resource_label = $ResourceLabel
 
+const WORLD_BOUNDS = {
+	"left": 0,
+	"right": 1280,
+	"top": 0,
+	"bottom": 720
+}
+
 func _ready():
 	print("Starting player initialization...")
 	add_to_group("player")
@@ -98,6 +105,10 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector2.ZERO, move_speed * delta)
 	
 	move_and_slide()
+	
+	# Clamp position within world bounds
+	global_position.x = clamp(global_position.x, WORLD_BOUNDS.left + 20, WORLD_BOUNDS.right - 20)
+	global_position.y = clamp(global_position.y, WORLD_BOUNDS.top + 20, WORLD_BOUNDS.bottom - 20)
 	
 	# Get mouse position in global coordinates
 	var mouse_pos = get_global_mouse_position()
