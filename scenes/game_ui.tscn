@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://butiv5bx0e1gf"]
+[gd_scene load_steps=5 format=3 uid="uid://butiv5bx0e1gf"]
 
 [ext_resource type="Script" path="res://scripts/ui_manager.gd" id="1_ui"]
+[ext_resource type="FontFile" uid="uid://d3ywqcdyeberc" path="res://assets/fonts/Born2bSportyFS.otf" id="2_vkwby"]
+
+[sub_resource type="Theme" id="Theme_5ed7p"]
+default_font = ExtResource("2_vkwby")
+default_font_size = 16
+
+[sub_resource type="Theme" id="Theme_8io0f"]
 
 [node name="GameUI" type="CanvasLayer"]
 script = ExtResource("1_ui")
@@ -21,11 +28,13 @@ horizontal_alignment = 2
 
 [node name="EnemyCount" type="Label" parent="WaveInfo"]
 layout_mode = 2
+theme = SubResource("Theme_5ed7p")
 text = "Enemies: 0"
 horizontal_alignment = 2
 
 [node name="WaveTimer" type="Label" parent="WaveInfo"]
 layout_mode = 2
+theme = SubResource("Theme_8io0f")
 text = "Time: --:--"
 horizontal_alignment = 2
 
@@ -62,9 +71,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
+offset_left = -121.0
 offset_top = -86.0
-offset_right = 100.0
+offset_right = 121.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -124,8 +133,10 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Label" type="Label" parent="GameOverPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-text = "Game Over"
+text = "Game Over
+"
 horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="GameOverPanel/VBoxContainer"]
@@ -165,6 +176,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Label" type="Label" parent="VictoryPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 text = "Victory!"
 horizontal_alignment = 1
